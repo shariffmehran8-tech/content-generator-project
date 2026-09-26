@@ -1,0 +1,89 @@
+{
+  "caption": {
+    "instagram": {
+      "casual": [
+        "{hook} {productName} is here and honestly, we're kind of obsessed. {keyPoint} {cta}",
+        "Okay real talk — {productName} might be our favorite drop yet. {keyPoint} {cta}",
+        "{hook} Meet {productName}. {keyPoint} Tag someone who needs this. {cta}",
+        "New in: {productName} 🎉 {keyPoint} {cta}"
+      ],
+      "professional": [
+        "Introducing {productName}. {keyPoint} {cta}",
+        "We're proud to share {productName} — {keyPoint} {cta}",
+        "{productName} is now available. {keyPoint} Learn more via the link in bio."
+      ],
+      "bold": [
+        "{productName} changes the game. {keyPoint} {cta}",
+        "Stop scrolling. {productName} is what you've been waiting for. {keyPoint} {cta}",
+        "This is not a drill. {productName} is live. {keyPoint} {cta}"
+      ]
+    },
+    "linkedin": {
+      "casual": [
+        "Excited to share {productName} with the community. {keyPoint} Would love your thoughts.",
+        "Been heads-down on {productName} for a while — finally ready to share. {keyPoint}"
+      ],
+      "professional": [
+        "We're pleased to announce {productName}. {keyPoint} {cta}",
+        "{productName} is now available. {keyPoint} We'd welcome the opportunity to discuss how this can support your team.",
+        "Today marks the launch of {productName}. {keyPoint} Read more below."
+      ],
+      "bold": [
+        "{productName} is built to solve a problem the industry has ignored for too long. {keyPoint}",
+        "We didn't build {productName} to compete. We built it to redefine the category. {keyPoint}"
+      ]
+    },
+    "x": {
+      "casual": [
+        "{productName} is live. {keyPoint} {cta}",
+        "just shipped {productName}. {keyPoint}",
+        "{hook} {productName} → {keyPoint}"
+      ],
+      "professional": [
+        "Announcing {productName}. {keyPoint} {cta}",
+        "{productName} is now available. {keyPoint}"
+      ],
+      "bold": [
+        "{productName} is out. everything else feels slow now. {keyPoint}",
+        "we built {productName} because the old way wasn't working. {keyPoint}"
+      ]
+    }
+  },
+  "ad": {
+    "general": {
+      "casual": [
+        "{hook} {productName} makes {benefit} easy. {keyPoint} {cta}",
+        "Tired of {painPoint}? {productName} fixes that. {keyPoint} {cta}"
+      ],
+      "professional": [
+        "{productName} helps teams {benefit}. {keyPoint} {cta}",
+        "Reduce {painPoint} with {productName}. {keyPoint} {cta}"
+      ],
+      "bold": [
+        "{painPoint} ends here. {productName} delivers {benefit} — starting today. {cta}",
+        "Everyone else is still dealing with {painPoint}. You won't be. {productName} {keyPoint} {cta}"
+      ],
+      "urgent": [
+        "{painPoint} is costing you more than you think. {productName} fixes it now. {cta}",
+        "Limited time: {productName} is available now. {keyPoint} {cta}"
+      ]
+    }
+  },
+  "hooks": [
+    "Big news —",
+    "Here's something new:",
+    "Just launched:",
+    "You asked, we built it:",
+    "Finally,",
+    "This just got easier."
+  ],
+  "ctas": [
+    "Learn more today.",
+    "Get started now.",
+    "See it for yourself.",
+    "Link in bio.",
+    "Try it free.",
+    "Book a demo.",
+    "Shop now."
+  ]
+}

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Content Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0f1420; font-family: 'Inter', sans-serif; }
+  ::selection { background: #e0a45855; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+const API_BASE = 'http://localhost:4020/api';
+
+const COLORS = {
+  bg: '#0f1420',
+  panel: '#161d2e',
+  border: '#2a3348',
+  amber: '#e0a458',
+  amberDim: '#e0a45899',
+  text: '#e8e6df',
+  textDim: '#9aa3b8',
+  mono: "'IBM Plex Mono', monospace",
+  serif: "'Fraunces', serif",
+  sans: "'Inter', sans-serif"
+};
+
+const TYPE_TABS = [
+  { id: 'caption', label: 'Social Caption' },
+  { id: 'ad', label: 'Ad Copy' },
+  { id: 'blog', label: 'Blog Post' }
+];
+
+function Select({ label, value, onChange, options }) {
+  return (
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <span style={{ fontSize: 11, color: COLORS.textDim, fontFamily: COLORS.mono }}>{label}</span>
+      <select value={value} onChange={e => onChange(e.target.value)} style={{
+        background: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`,
+        borderRadius: 6, padding: '8px 10px', fontSize: 13, fontFamily: COLORS.sans
+      }}>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function Input({ label, value, onChange, placeholder, type = 'text' }) {
+  return (
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <span style={{ fontSize: 11, color: COLORS.textDim, fontFamily: COLORS.mono }}>{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
+        placeholder={placeholder}
+        style={{
+          background: COLORS.bg, color: COLORS.text, border: `1px solid ${COLORS.border}`,
+          borderRadius: 6, padding: '8px 10px', fontSize: 13, fontFamily: COLORS.sans
+        }}
+      />
+    </label>
+  );
+}
+
+function IconButton({ onClick, children }) {
+  return (
+    <button onClick={onClick} style={{
+      display: 'flex', alignItems: 'center', gap: 5,
+      background: 'transparent', border: `1px solid ${COLORS.border}`, borderRadius: 6,
+      padding: '5px 10px', color: COLORS.amber, fontSize: 11,
+      fontFamily: COLORS.mono, cursor: 'pointer'
+    }}>
+      {children}
+    </button>
+  );
+}
+
+function App() {
+  const [type, setType] = useState('caption');
+  const [platform, setPlatform] = useState('instagram');
+  const [tone, setTone] = useState('casual');
+  const [productName, setProductName] = useState('');
+  const [keyPoint, setKeyPoint] = useState('');
+  const [benefit, setBenefit] = useState('');
+  const [painPoint, setPainPoint] = useState('');
+  const [topic, setTopic] = useState('');
+  const [targetLength, setTargetLength] = useState(600);
+
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [copiedIdx, setCopiedIdx] = useState(null);
+  const [savedMsg, setSavedMsg] = useState(false);
+
+  async function handleGenerate() {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    let body = { type };
+    if (type === 'caption') body = { ...body, platform, tone, productName, keyPoint };
+    if (type === 'ad') body = { ...body, tone, productName, benefit, painPoint };
+    if (type === 'blog') body = { ...body, topic, tone, targetLength, keyPoints: keyPoint ? [keyPoint] : [] };
+
+    try {
+      const res = await fetch(`${API_BASE}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Generation failed');
+      setResult(data);
+    } catch (err) {
+      setError(err.message + ' — is the server running on port 4020?');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSaveDraft(content) {
+    try {
+      await fetch(`${API_BASE}/drafts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, content, meta: { platform, tone, productName, topic } })
+      });
+      setSavedMsg(true);
+      setTimeout(() => setSavedMsg(false), 1500);
+    } catch (err) {
+      setError('Failed to save draft: ' + err.message);
+    }
+  }
+
+  function copyToClipboard(text, idx) {
+    navigator.clipboard.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 1500);
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', padding: '40px 20px' }}>
+      <div style={{
+        background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 12,
+        padding: 28, width: '100%', maxWidth: 640, color: COLORS.text
+      }}>
+        <div style={{ marginBottom: 4 }}>
+          <h1 style={{ fontFamily: COLORS.serif, fontSize: 24, fontWeight: 500, margin: 0 }}>
+            Content Generator
+          </h1>
+          <p style={{ fontFamily: COLORS.mono, fontSize: 11, color: COLORS.textDim, margin: '4px 0 20px' }}>
+            standalone · no external API
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {TYPE_TABS.map(t => {
+            const active = type === t.id;
+            return (
+              <button key={t.id} onClick={() => { setType(t.id); setResult(null); }} style={{
+                padding: '8px 14px', borderRadius: 8,
+                border: `1px solid ${active ? COLORS.amber : COLORS.border}`,
+                background: active ? '#2a2216' : 'transparent',
+                color: active ? COLORS.amber : COLORS.textDim,
+                fontFamily: COLORS.mono, fontSize: 12, cursor: 'pointer'
+              }}>
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+          {type === 'caption' && (
+            <React.Fragment>
+              <Select label="Platform" value={platform} onChange={setPlatform} options={['instagram', 'linkedin', 'x']} />
+              <Select label="Tone" value={tone} onChange={setTone} options={['casual', 'professional', 'bold']} />
+              <Input label="Product / Offer" value={productName} onChange={setProductName} placeholder="e.g. Autumn Collection" />
+              <Input label="Key Point" value={keyPoint} onChange={setKeyPoint} placeholder="e.g. 20% off through Sunday" />
+            </React.Fragment>
+          )}
+
+          {type === 'ad' && (
+            <React.Fragment>
+              <Select label="Tone" value={tone} onChange={setTone} options={['professional', 'casual', 'bold', 'urgent']} />
+              <Input label="Product / Service" value={productName} onChange={setProductName} placeholder="e.g. Invoicing Software" />
+              <Input label="Benefit" value={benefit} onChange={setBenefit} placeholder="e.g. get paid 2x faster" />
+              <Input label="Pain Point" value={painPoint} onChange={setPainPoint} placeholder="e.g. chasing late invoices" />
+            </React.Fragment>
+          )}
+
+          {type === 'blog' && (
+            <React.Fragment>
+              <Select label="Tone" value={tone} onChange={setTone} options={['professional', 'casual', 'bold']} />
+              <Input label="Topic" value={topic} onChange={setTopic} placeholder="e.g. Why freelancers should automate invoicing" />
+              <Input label="Key Point" value={keyPoint} onChange={setKeyPoint} placeholder="Optional — one point to make sure gets included" />
+              <Input label="Target Length (words)" value={targetLength} onChange={setTargetLength} type="number" />
+              <div style={{ fontSize: 11, color: COLORS.textDim, fontFamily: COLORS.mono }}>
+                Uses a local Ollama model if running — falls back to a structured outline otherwise.
+              </div>
+            </React.Fragment>
+          )}
+        </div>
+
+        <button onClick={handleGenerate} disabled={loading} style={{
+          padding: '10px 18px', borderRadius: 8, border: 'none',
+          background: COLORS.amber, color: '#1a1408',
+          fontFamily: COLORS.sans, fontWeight: 600, fontSize: 14,
+          cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1
+        }}>
+          {loading ? 'Generating…' : 'Generate'}
+        </button>
+
+        {error && (
+          <div style={{ marginTop: 16, color: '#e07a5f', fontFamily: COLORS.mono, fontSize: 12 }}>
+            {error}
+          </div>
+        )}
+
+        {savedMsg && (
+          <div style={{ marginTop: 12, color: COLORS.amber, fontFamily: COLORS.mono, fontSize: 12 }}>
+            Saved to drafts.json ✓
+          </div>
+        )}
+
+        {result && (
+          <div style={{ marginTop: 20, borderTop: `1px solid ${COLORS.border}`, paddingTop: 16 }}>
+            {result.note && (
+              <div style={{ fontSize: 11, color: COLORS.amberDim, fontFamily: COLORS.mono, marginBottom: 12 }}>
+                {result.note}
+              </div>
+            )}
+
+            {result.variants ? (
+              result.variants.map((variant, idx) => (
+                <div key={idx} style={{
+                  background: COLORS.bg, border: `1px solid ${COLORS.border}`,
+                  borderRadius: 8, padding: 14, marginBottom: 10
+                }}>
+                  <div style={{ fontSize: 14, lineHeight: 1.5, marginBottom: 10 }}>{variant}</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <IconButton onClick={() => copyToClipboard(variant, idx)}>
+                      {copiedIdx === idx ? 'Copied' : 'Copy'}
+                    </IconButton>
+                    <IconButton onClick={() => handleSaveDraft(variant)}>
+                      Save as Draft
+                    </IconButton>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{
+                background: COLORS.bg, border: `1px solid ${COLORS.border}`,
+                borderRadius: 8, padding: 14, whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6
+              }}>
+                {result.draft}
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <IconButton onClick={() => copyToClipboard(result.draft, 0)}>
+                    {copiedIdx === 0 ? 'Copied' : 'Copy'}
+                  </IconButton>
+                  <IconButton onClick={() => handleSaveDraft(result.draft)}>
+                    Save as Draft
+                  </IconButton>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
